@@ -3,7 +3,7 @@
 var viewer = document.getElementById('viewer');
 var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera( 75, viewer.clientWidth/ viewer.clientHeight, 0.1, 1000 );
-camera.position.z = 2;
+camera.position.z = 5;
 
 var spotlight = new THREE.SpotLight();
 spotlight.position.set(0,2000,2000);
@@ -20,6 +20,7 @@ var imgTex = new THREE.TextureLoader().load('./img/option1.png');
 imgTex.minFilter = THREE.LinearFilter;
 var imgMat = new THREE.SpriteMaterial({map: imgTex, color: 0xffffff});
 var img = new THREE.Sprite(imgMat);
+img.name = 'img';
 
 
 // -----------------------------------------------------------
@@ -34,18 +35,9 @@ option1.addEventListener('mousedown', function(){chosen = true}, false)
 
 // Determine the Location of the Mouse within the Canvas Frame
 function onDocumentMouseMove(event){
+	// If the img has been selected and the mouse has entered the three.js frame
 	if (chosen == true){
 		if (event.target.id == 'viewer'){
-			// NEED TO GET THE MOUSE COORDINATES HERE
-			/*
-				- Find page(global) coordinates of canvas
-				- Normalize xy coords such that left side of canvas = -1, right = 1, top = 1, bottom = -1
-				- Determine how much of the scene is visible given the camera coordinates
-				- Convert the mouse coordinates to scene coordinates
-				- Place sprite at location where mouse enters the scene
-				- Use the DeltaX/Y values then to move the sprite
-				- On mouse up, stop changing the sprite location
-			*/
 			var offsetLeft = event.target.offsetLeft;
 			var offsetTop = event.target.offsetTop;
 
@@ -56,9 +48,12 @@ function onDocumentMouseMove(event){
 			// Adjusted to match the visible dimensions of the viewer
 			mouse.x *= 0.5 * getViewerFOV().width;
 			mouse.y *= 0.5 * getViewerFOV().height;
-
 			img.position.set(mouse.x, mouse.y, 0);
-			scene.add(img);
+
+			// Only add the image to the scene if it isn't already there
+			if (!isChild(scene.children, img.name)){
+				scene.add(img);
+			}
 		}
 	}
 }
@@ -78,6 +73,13 @@ function getViewerFOV(){
 		return {'width': width, 'height': height};
 }
 
+// See if something is a child of the input
+function isChild(array, name){
+	for (var i = 0; i < array.length; i++){
+		if (array[i].name == name) return true;
+	}
+	return false
+}
 // -----------------------------------------------------------
 // Prepare to Render
 var render = function () {
